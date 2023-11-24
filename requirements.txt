@@ -1,0 +1,7 @@
+streamlit
+langchain
+ticktoken
+openai
+tqdm
+openpyxl
+gradio
