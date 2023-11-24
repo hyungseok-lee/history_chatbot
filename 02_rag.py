@@ -26,6 +26,7 @@ def load_and_process_data(data_dir):
     pdf_list = sorted(os.listdir(data_dir))
     for idx, pdf_name in enumerate(pdf_list):
         if pdf_name.endswith(".pdf"):
+            print(data_dir, pdf_name)
             loader = PyPDFLoader(os.path.join(data_dir, pdf_name))
             documents = loader.load_and_split()
             doc_list.extend(documents)
@@ -69,7 +70,7 @@ def get_conversation_chain(vetorestore,openai_api_key):
     return conversation_chain
 
 openai_api_key = "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"
-data_dir = "data" 
+data_dir = "data/" 
 
 st.set_page_config(
     page_title="HistoryChat", 
