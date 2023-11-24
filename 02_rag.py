@@ -1,4 +1,3 @@
-
 import streamlit as st
 import tiktoken, os
 
@@ -14,8 +13,6 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
-
-
 
 
 def tiktoken_len(text):
@@ -86,26 +83,12 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = None
 if "processComplete" not in st.session_state:
     st.session_state.processComplete = None
-# if "vectorstore" not in st.session_state:
-#     st.session_state.vectorstore = None
-
-# with st.sidebar:
-#      process = st.button("Process")
-     
-# if process:
-#     doc_list = load_and_process_data(data_dir)
-#     text_chunks = get_text_chunks(doc_list)
-#     vetorestore = get_vectorstore(text_chunks)
-
-#     st.session_state.conversation = get_conversation_chain(vetorestore, openai_api_key) 
-#     st.session_state.processComplete = True
 
 if 'vectorstore' not in st.session_state:
     st.session_state.vectorstore = None
     doc_list = load_and_process_data(data_dir)
     text_chunks = get_text_chunks(doc_list)
     vetorestore = get_vectorstore(text_chunks)
-    # st.session_state.vectorstore = vetorestore
     
     st.session_state.conversation = get_conversation_chain(vetorestore, openai_api_key) 
     st.session_state.processComplete = True
