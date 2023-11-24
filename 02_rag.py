@@ -15,6 +15,9 @@ from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 
 
+openai_api_key = "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"
+data_dir = "data/" 
+
 def tiktoken_len(text):
     tokenizer = tiktoken.get_encoding("cl100k_base")
     tokens = tokenizer.encode(text)
@@ -68,13 +71,8 @@ def get_conversation_chain(vetorestore,openai_api_key):
 
     return conversation_chain
 
-openai_api_key = "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"
-data_dir = "data/" 
 
-st.set_page_config(
-    page_title="HistoryChat", 
-    page_icon=":books:")
-
+st.set_page_config(page_title="HistoryChat", page_icon=":books:")
 st.title("_History :red[QA Chat]_ :books:")
 
 if "conversation" not in st.session_state:
@@ -83,26 +81,28 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = None
 if "processComplete" not in st.session_state:
     st.session_state.processComplete = None
+    
+if 'messages' not in st.session_state:
+    st.session_state['messages'] = [{"role": "assistant", 
+                                     "content": "역사에 관해 궁금하신 것이 있으면 언제든 물어봐주세요!"}]
+
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
 if 'vectorstore' not in st.session_state:
     st.session_state.vectorstore = None
     doc_list = load_and_process_data(data_dir)
     text_chunks = get_text_chunks(doc_list)
     vetorestore = get_vectorstore(text_chunks)
-    
+
     st.session_state.conversation = get_conversation_chain(vetorestore, openai_api_key) 
     st.session_state.processComplete = True
 
 
-if 'messages' not in st.session_state:
-    st.session_state['messages'] = [
-        {"role": "assistant", 
-        "content": "안녕하세요! 역사에 관해 궁금하신 것이 있으면 언제든 물어봐주세요!"}
-    ]
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+
 
 history = StreamlitChatMessageHistory(key="chat_messages")
 
