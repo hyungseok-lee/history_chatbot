@@ -5,3 +5,4 @@ openai
 tqdm
 openpyxl
 gradio
+pypdf
