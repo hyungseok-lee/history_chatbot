@@ -1,6 +1,6 @@
 streamlit
 langchain
-ticktoken
+tiktoken
 openai
 tqdm
 openpyxl
