@@ -15,7 +15,7 @@ from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 
 
-openai_api_key = "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"
+openai_api_key = "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"
 data_dir = "data/" 
 
 def tiktoken_len(text):
