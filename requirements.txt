@@ -6,3 +6,4 @@ tqdm
 openpyxl
 gradio
 pypdf
+sentence-transformers

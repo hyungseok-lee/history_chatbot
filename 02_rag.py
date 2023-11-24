@@ -26,7 +26,6 @@ def load_and_process_data(data_dir):
     pdf_list = sorted(os.listdir(data_dir))
     for idx, pdf_name in enumerate(pdf_list):
         if pdf_name.endswith(".pdf"):
-            print(data_dir, pdf_name)
             loader = PyPDFLoader(os.path.join(data_dir, pdf_name))
             documents = loader.load_and_split()
             doc_list.extend(documents)
