@@ -1,5 +1,7 @@
+import os
+# from dotenv import load_dotenv
 import streamlit as st
-import tiktoken, os
+import tiktoken
 
 # from streamlit_chat import message
 from langchain.memory import ConversationBufferMemory
@@ -15,8 +17,9 @@ from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 
 
-openai_api_key = "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"
+
 data_dir = "data/" 
+openai_api_key = os.environ.get('OPENAI_API_KEY')
 
 def tiktoken_len(text):
     tokenizer = tiktoken.get_encoding("cl100k_base")
@@ -57,7 +60,7 @@ def get_vectorstore(text_chunks):
     return vectordb
 
 
-def get_conversation_chain(vetorestore,openai_api_key):
+def get_conversation_chain(vetorestore, openai_api_key):
     llm = ChatOpenAI(openai_api_key=openai_api_key, model_name = 'gpt-3.5-turbo-1106', temperature=0)
     conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm, 
