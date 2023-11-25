@@ -26,11 +26,11 @@ def tiktoken_len(text):
     tokens = tokenizer.encode(text)
     return len(tokens)
 
-
+@st.cache_resource(show_spinner=False)
 def load_and_process_data(data_dir):
     doc_list = []
     pdf_list = sorted(os.listdir(data_dir))
-    for idx, pdf_name in enumerate(pdf_list):
+    for idx, pdf_name in enumerate(pdf_list[:4]):
         if pdf_name.endswith(".pdf"):
             loader = PyPDFLoader(os.path.join(data_dir, pdf_name))
             documents = loader.load_and_split()
