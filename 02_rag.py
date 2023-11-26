@@ -17,9 +17,9 @@ from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 
 
-
 data_dir = "data/" 
 openai_api_key = os.environ.get('OPENAI_API_KEY')
+
 
 def tiktoken_len(text):
     tokenizer = tiktoken.get_encoding("cl100k_base")
@@ -67,7 +67,7 @@ def get_conversation_chain(vetorestore, openai_api_key):
             chain_type="stuff", 
             retriever=vetorestore.as_retriever(search_type = 'mmr', vervose = True), 
             memory=ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer'),
-            get_chat_history=lambda h: h,
+            get_chat_history=lambda h: h[:100],
             return_source_documents=True,
             verbose = True
         )
@@ -104,7 +104,7 @@ def main():
         st.session_state.conversation = get_conversation_chain(vetorestore, openai_api_key) 
         st.session_state.processComplete = True
 
-    history = StreamlitChatMessageHistory(key="chat_messages")
+    # history = StreamlitChatMessageHistory(key="chat_messages")
 
     # Chat logic
     if query := st.chat_input("질문을 입력해주세요."):
@@ -118,9 +118,7 @@ def main():
 
             with st.spinner("Thinking..."):
                 result = chain({"question": query})
-                with get_openai_callback() as cb:
-                    st.session_state.chat_history = result['chat_history']
-                    
+
                 response = result['answer']
                 st.markdown(response)
 
