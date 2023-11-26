@@ -30,7 +30,7 @@ def tiktoken_len(text):
 def load_and_process_data(data_dir):
     doc_list = []
     pdf_list = sorted(os.listdir(data_dir))
-    for idx, pdf_name in enumerate(pdf_list[:4]):
+    for idx, pdf_name in enumerate(pdf_list):
         if pdf_name.endswith(".pdf"):
             loader = PyPDFLoader(os.path.join(data_dir, pdf_name))
             documents = loader.load_and_split()
@@ -118,7 +118,9 @@ def main():
 
             with st.spinner("Thinking..."):
                 result = chain({"question": query})
-
+                # with get_openai_callback() as cb:
+                #     st.session_state.chat_history = result['chat_history']
+                    
                 response = result['answer']
                 st.markdown(response)
 
