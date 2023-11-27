@@ -1,0 +1,40 @@
+import streamlit as st
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.callbacks import get_openai_callback
+from langchain.memory import StreamlitChatMessageHistory
+
+
+@st.cache_resource(show_spinner=False)
+def load_and_process_data(data_dir):
+    doc_list = []
+    pdf_list = sorted(os.listdir(data_dir))
+    for idx, pdf_name in enumerate(pdf_list):
+        if pdf_name.endswith(".pdf"):
+            loader = PyPDFLoader(os.path.join(data_dir, pdf_name))
+            documents = loader.load_and_split()
+            doc_list.extend(documents)
+            print(f"{idx+1}/{len(pdf_list)} {pdf_name} loaded")
+    print(f"Total {idx+1} documents loaded")
+    return doc_list
+
+
+def get_text_chunks(text):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=900,
+        chunk_overlap=100,
+        length_function=tiktoken_len
+    )
+    chunks = text_splitter.split_documents(text)
+    return chunks
+
+
+def get_vectorstore(text_chunks):
+    embeddings = HuggingFaceEmbeddings(
+                                        model_name="jhgan/ko-sroberta-multitask",
+                                        model_kwargs={'device': 'cpu'},
+                                        encode_kwargs={'normalize_embeddings': True}
+                                        )  
+    vectordb = FAISS.from_documents(text_chunks, embeddings)
+    vectordb.save_local("faiss_index")
+    return vectordb

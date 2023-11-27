@@ -5,14 +5,8 @@ import tiktoken
 
 # from streamlit_chat import message
 from langchain.memory import ConversationBufferMemory
-from langchain.callbacks import get_openai_callback
-from langchain.memory import StreamlitChatMessageHistory
-
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
-
-from langchain.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 
@@ -21,44 +15,11 @@ data_dir = "data/"
 openai_api_key = os.environ.get('OPENAI_API_KEY')
 
 
+
 def tiktoken_len(text):
     tokenizer = tiktoken.get_encoding("cl100k_base")
     tokens = tokenizer.encode(text)
     return len(tokens)
-
-@st.cache_resource(show_spinner=False)
-def load_and_process_data(data_dir):
-    doc_list = []
-    pdf_list = sorted(os.listdir(data_dir))
-    for idx, pdf_name in enumerate(pdf_list):
-        if pdf_name.endswith(".pdf"):
-            loader = PyPDFLoader(os.path.join(data_dir, pdf_name))
-            documents = loader.load_and_split()
-            doc_list.extend(documents)
-            print(f"{idx+1}/{len(pdf_list)} {pdf_name} loaded")
-    print(f"Total {idx+1} documents loaded")
-    return doc_list
-
-
-def get_text_chunks(text):
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=900,
-        chunk_overlap=100,
-        length_function=tiktoken_len
-    )
-    chunks = text_splitter.split_documents(text)
-    return chunks
-
-
-def get_vectorstore(text_chunks):
-    embeddings = HuggingFaceEmbeddings(
-                                        model_name="jhgan/ko-sroberta-multitask",
-                                        model_kwargs={'device': 'cpu'},
-                                        encode_kwargs={'normalize_embeddings': True}
-                                        )  
-    vectordb = FAISS.from_documents(text_chunks, embeddings)
-    vectordb.save_local("faiss_index")
-    return vectordb
 
 
 def get_conversation_chain(vetorestore, openai_api_key):
@@ -68,7 +29,7 @@ def get_conversation_chain(vetorestore, openai_api_key):
             chain_type="stuff", 
             retriever=vetorestore.as_retriever(search_type = 'mmr', vervose = True), 
             memory=ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer'),
-            get_chat_history=lambda h: h[:100],
+            get_chat_history=lambda h: h[:50],
             return_source_documents=True,
             verbose = True
         )
@@ -106,12 +67,10 @@ def main():
             model_kwargs={'device': 'cpu'},
             encode_kwargs={'normalize_embeddings': True})  
         
-        vectorestore = FAISS.load_local("faiss_index", embeddings)
-
-        st.session_state.conversation = get_conversation_chain(vectorestore, openai_api_key) 
+        st.session_state.vectorstore = FAISS.load_local("faiss_index", embeddings)
+        st.session_state.conversation = get_conversation_chain(st.session_state.vectorstore, openai_api_key) 
         st.session_state.processComplete = True
-
-    # history = StreamlitChatMessageHistory(key="chat_messages")
+        
 
     # Chat logic
     if query := st.chat_input("질문을 입력해주세요."):
@@ -125,9 +84,6 @@ def main():
 
             with st.spinner("Thinking..."):
                 result = chain({"question": query})
-                # with get_openai_callback() as cb:
-                #     st.session_state.chat_history = result['chat_history']
-                    
                 response = result['answer']
                 st.markdown(response)
 
