@@ -15,11 +15,15 @@ data_dir = "data/"
 openai_api_key = os.environ.get('OPENAI_API_KEY')
 
 
-
-def tiktoken_len(text):
-    tokenizer = tiktoken.get_encoding("cl100k_base")
-    tokens = tokenizer.encode(text)
-    return len(tokens)
+@st.cache_resource(show_spinner=False)
+def load_vectorstore(data_dir):
+    embeddings = HuggingFaceEmbeddings(
+        model_name="jhgan/ko-sroberta-multitask",
+        model_kwargs={'device': 'cpu'},
+        encode_kwargs={'normalize_embeddings': True})  
+        
+    vectorstore = FAISS.load_local(data_dir, embeddings)
+    return vectorstore
 
 
 def get_conversation_chain(vetorestore, openai_api_key):
@@ -58,16 +62,8 @@ def main():
             st.markdown(message["content"])
 
     if 'vectorstore' not in st.session_state:
-        st.session_state.vectorstore = None
-        # doc_list = load_and_process_data(data_dir)
-        # text_chunks = get_text_chunks(doc_list)
-        
-        embeddings = HuggingFaceEmbeddings(
-            model_name="jhgan/ko-sroberta-multitask",
-            model_kwargs={'device': 'cpu'},
-            encode_kwargs={'normalize_embeddings': True})  
-        
-        st.session_state.vectorstore = FAISS.load_local("faiss_index", embeddings)
+        st.session_state.vectorstore = None    
+        st.session_state.vectorstore = load_vectorstore("faiss_index")
         st.session_state.conversation = get_conversation_chain(st.session_state.vectorstore, openai_api_key) 
         st.session_state.processComplete = True
         
