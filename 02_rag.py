@@ -57,6 +57,7 @@ def get_vectorstore(text_chunks):
                                         encode_kwargs={'normalize_embeddings': True}
                                         )  
     vectordb = FAISS.from_documents(text_chunks, embeddings)
+    vectordb.save_local("faiss_index")
     return vectordb
 
 
@@ -97,11 +98,17 @@ def main():
 
     if 'vectorstore' not in st.session_state:
         st.session_state.vectorstore = None
-        doc_list = load_and_process_data(data_dir)
-        text_chunks = get_text_chunks(doc_list)
-        vetorestore = get_vectorstore(text_chunks)
+        # doc_list = load_and_process_data(data_dir)
+        # text_chunks = get_text_chunks(doc_list)
+        
+        embeddings = HuggingFaceEmbeddings(
+            model_name="jhgan/ko-sroberta-multitask",
+            model_kwargs={'device': 'cpu'},
+            encode_kwargs={'normalize_embeddings': True})  
+        
+        vectorestore = FAISS.load_local("faiss_index", embeddings)
 
-        st.session_state.conversation = get_conversation_chain(vetorestore, openai_api_key) 
+        st.session_state.conversation = get_conversation_chain(vectorestore, openai_api_key) 
         st.session_state.processComplete = True
 
     # history = StreamlitChatMessageHistory(key="chat_messages")
